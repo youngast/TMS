@@ -3,7 +3,7 @@ import { TestRunsService } from './test-runs.service';
 import { CreateTestRunsDto } from './dto/create-test-runs.dto';
 import { UpdateTestRunsDto } from './dto/update-test-runs.dto';
 
-@Controller('test-runs')
+@Controller('projects/:projectId/test-suites/:testSuiteId/test-cases/:testCaseId/test-runs')
 export class TestRunsController {
 
     constructor(
@@ -13,13 +13,14 @@ export class TestRunsController {
     }
 
     @Get()
-    getallTestRuns() {
-        return this.testRunsService.getallTestRuns();
+    getallTestRuns(projectId:string) {
+        return this.testRunsService.getallTestRuns(+projectId);
     }
 
     @Post()
-    createTestRuns(@Body() body:CreateTestRunsDto){
-        return this.testRunsService.createTestRuns(body);
+
+    createTestRuns(@Body() body:CreateTestRunsDto, @Param('projectId') projectId: string, @Param('testSuiteId') testSuiteId: string, @Param('testCaseId') testCaseId: string){
+        return this.testRunsService.createTestRuns(body, +projectId, +testSuiteId, +testCaseId);
     }
 
     @Get(':id')

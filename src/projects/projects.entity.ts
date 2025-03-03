@@ -15,15 +15,15 @@ export class ProjectEntity{
     @Column({nullable:true})
     description:string;
 
-    @ManyToOne(() => UserEntity, (user) => user.projects, { onDelete: 'CASCADE' })
+    @ManyToOne(() => UserEntity, (user) => user.projects, { onDelete: 'CASCADE', eager: true })
     owner: UserEntity;    
 
-    @OneToMany(() => TestSuiteEntity, (testSuite) => testSuite.project)
+    @OneToMany(() => TestSuiteEntity, (testSuite) => testSuite.project, { cascade: true })
     testSuites: TestSuiteEntity[];
 
     @CreateDateColumn()
     createdAt: Date;
 
-    @OneToMany(()=> ProjectMemberEntity, (member) => member.project)
+    @OneToMany(()=> ProjectMemberEntity, (member) => member.project, {cascade: true})
     members: ProjectMemberEntity[];
 }

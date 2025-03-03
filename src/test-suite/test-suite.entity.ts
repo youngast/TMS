@@ -18,6 +18,6 @@ export class TestSuiteEntity {
     @OneToMany(() => TestRunEntity, (testRun) => testRun.testSuite, { cascade: true })
     testRuns: TestRunEntity[];
 
-    @ManyToOne(()=> ProjectEntity, (project) => project.testSuites, {onDelete: 'CASCADE'})
+    @ManyToOne(()=> ProjectEntity, (project) => project.testSuites, {onDelete: 'CASCADE', eager: true})
     project: ProjectEntity;
 }

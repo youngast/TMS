@@ -51,21 +51,4 @@ export class ProjectsController {
     //     return this.projectService.updateMember(+projectId, +userId);
     // }
 
-    @Post(':projectId/test-suites/:testSuiteId/test-cases')
-    createTestCase(
-        @Param('projectId', ParseIntPipe) projectId: number,
-        @Param('testSuiteId', ParseIntPipe) testSuiteId: number,
-        @Body() dto: CreateTestCaseDto
-    ) {
-        return this.projectService.createTestCase(projectId, testSuiteId, dto);
-    }
-
-    @Post(':projectId/test-suites/:testSuiteId/test-cases/:testCaseId/test-runs')
-    createTestRun(
-        @Param('projectId', ParseIntPipe) projectId: number,
-        @Param('testSuiteId', ParseIntPipe) testSuiteId: number,
-        @Param('testCaseId', ParseIntPipe) testCaseId: number,
-        @Body() dto: CreateTestRunsDto
-    ) {
-        return this.projectService.createTestRun(projectId, testSuiteId, testCaseId, dto);
-    }}
+}

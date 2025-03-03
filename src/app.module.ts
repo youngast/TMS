@@ -21,7 +21,7 @@ import { ProjectMemberEntity } from './projects/project-member.entity';
       host: 'localhost',
       port: 5432,
       username: 'postgres',
-      password: 'postgres',
+      password: 'h@#W1Gs6u',
       database: 'tms_db',
       synchronize: true,
       entities: [UserEntity, TestCaseEntity, TestSuiteEntity, TestRunEntity, ProjectEntity, ProjectMemberEntity]

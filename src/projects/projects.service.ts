@@ -113,62 +113,6 @@ export class ProjectsService {
         }
 
         await this.projectMemberRepository.remove(member);
-        return {message: 'Участник удален'}
-    }
-
-     //  1. Создание Test Suite в проекте
-     async createTestSuite(projectId: number, body:CreateTestSuiteDto): Promise<TestSuiteEntity> {
-        const project = await this.projectRepository.findOne({ where: { id: projectId } });
-        if (!project) {
-            throw new NotFoundException('Проект не найден');
-        }
-
-        const testSuite = this.testSuiteRepository.create({
-            name: body.name,
-            project
-        });
-
-        return this.testSuiteRepository.save(testSuite);
-    }
-
-    //  2. Создание Test Case в Test Suite внутри проекта
-    async createTestCase(projectId: number, testSuiteId: number, body: CreateTestCaseDto): Promise<TestCaseEntity> {
-        const testSuite = await this.testSuiteRepository.findOne({
-            where: { id: testSuiteId, project: { id: projectId } }, relations: ['project']
-        });
-
-        if (!testSuite) {
-            throw new NotFoundException('Test Suite не найден в этом проекте');
-        }
-
-        const testCase = this.testCaseRepository.create({
-            title: body.title,
-            description: body.description,
-            testSuite
-        });
-
-        return this.testCaseRepository.save(testCase);
-    }
-
-    // 3. Создание Test Run в Test Case внутри проекта
-    async createTestRun(projectId: number, testSuiteId: number, testCaseId: number, body: CreateTestRunsDto): Promise<TestRunEntity> {
-        const testCase = await this.testCaseRepository.findOne({
-            where: { id: testCaseId, testSuite: { id: testSuiteId, project: { id: projectId } } },
-            relations: ['testSuite', 'testSuite.project']
-        });
-
-        if (!testCase) {
-            throw new NotFoundException('Test Case не найден в этом проекте');
-        }
-
-        const testRun = this.testRunRepository.create({
-            title: body.title,
-            description: body.description,
-            status: body.status,
-            executionTime: body.executionTime,
-            testCase
-        });
-
-        return this.testRunRepository.save(testRun);
+        return {message: `Участник ${member.user.name} удален`}
     }
 }

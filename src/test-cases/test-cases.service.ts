@@ -17,9 +17,12 @@ export class TestCasesService {
 
 
     // Создать тест кейс
-    async createTestCase(body:CreateTestCaseDto): Promise<TestCaseEntity> {
-        const testsuiteid = await this.testSuitesRepository.findOne({where:{id: body.testSuiteId}});
-        if(!testsuiteid){
+    async createTestCase(body:CreateTestCaseDto, projectId: number, testSuiteId: number): Promise<TestCaseEntity> {
+        const testSuite = await this.testSuitesRepository.findOne({
+            where:{project:{id: projectId}, id: testSuiteId},
+            relations: ['project']
+        })
+        if(!testSuite){
             throw new NotFoundException('Нет тест-сьют')
         }
 
@@ -29,19 +32,22 @@ export class TestCasesService {
             steps: body.steps,
             expectedResult: body.expectedResult,
             status: body.status,
-            testSuite: testsuiteid
+            testSuite
         });
         return this.testCasesRepository.save(testcase);
     }
 
-    findallTestCase(): Promise<TestCaseEntity[]> {
-        return this.testCasesRepository.find({relations:['testSuite']});
+    findallTestCase(projectId: number): Promise<TestCaseEntity[]> {
+        return this.testCasesRepository.find({
+            where: { testSuite: { project: { id: projectId } } },
+            relations: ['testSuite']
+        });
     }
 
     async findoneTestCase(id: number): Promise<TestCaseEntity> {
         const testCase = await this.testCasesRepository.findOne({
             where: { id },
-            relations: ['testSuite'],
+            relations: ['testSuite','testSuite.project'],
         });
     
         if (!testCase) {
@@ -69,10 +75,12 @@ export class TestCasesService {
     }
     
 
-    async deleteTestCase(id:number): Promise<TestCaseEntity> {
+    async deleteTestCase(id:number): Promise<{message:string}> {
         const testcase = await this.findoneTestCase(id);
 
-        return this.testCasesRepository.remove(testcase);
+        await this.testCasesRepository.remove(testcase);
+
+        return {message: `${testcase.title} удален`};
     }
 
 }

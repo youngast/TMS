@@ -5,9 +5,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TestCaseEntity } from 'src/test-cases/test-cases.entity';
 import { TestRunEntity } from './test-runs.entity';
 import { TestSuiteEntity } from 'src/test-suite/test-suite.entity';
+import { ProjectEntity } from 'src/projects/projects.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([TestRunEntity, TestCaseEntity, TestSuiteEntity])],
+  imports: [TypeOrmModule.forFeature([TestRunEntity, TestCaseEntity, TestSuiteEntity, ProjectEntity])],
   controllers: [TestRunsController],
   providers: [TestRunsService],
   exports: [TestRunsService]
