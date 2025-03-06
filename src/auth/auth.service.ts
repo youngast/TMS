@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { UsersService } from 'src/users/users.service';
 import { RegisterDto, LoginDto } from './dto/create-auth.dto';
 import { UserEntity } from '../users/users.entity';
 import * as bcrypt from 'bcrypt';
@@ -9,10 +10,9 @@ import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class AuthService {
     constructor(
-        @InjectRepository(UserEntity)
-        private readonly userRepository: Repository<UserEntity>,
-        private readonly jwtService: JwtService
-    ) {}
+        @InjectRepository(UserEntity) private userRepository: Repository<UserEntity>,
+        private jwtService: JwtService
+    ){}
 
     async findById(id: number): Promise<UserEntity> {
         return this.userRepository.findOne({ where: { id } });
@@ -55,8 +55,9 @@ export class AuthService {
             throw new UnauthorizedException('Неправильный пароль');
         }
 
-        return {
-            accessToken: this.jwtService.sign({ id: user.id, email: user.email }),
+    async getCurrentUser(id: number): Promise<UserEntity> {
+        return accessToken: this.jwtService.sign({ id: user.id, email: user.email }),
         };
     }
+
 }
