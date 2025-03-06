@@ -5,15 +5,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import {ProjectEntity} from './projects.entity';
 import { TestSuiteEntity } from 'src/test-suite/test-suite.entity';
 import { UserEntity } from 'src/users/users.entity';
-import { ProjectMemberEntity } from './project-member.entity';
 import { TestCaseEntity } from 'src/test-cases/test-cases.entity';
 import { TestRunEntity } from 'src/test-runs/test-runs.entity';
 
 @Module({
   controllers: [ProjectsController],
   providers: [ProjectsService],
-  imports: [TypeOrmModule.forFeature([      ProjectEntity,
-    ProjectMemberEntity,
+  imports: [TypeOrmModule.forFeature([ProjectEntity,
     TestSuiteEntity,
     TestCaseEntity,
     TestRunEntity,

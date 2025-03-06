@@ -11,7 +11,7 @@ import { TestSuiteModule } from './test-suite/test-suite.module';
 import { TestSuiteEntity } from './test-suite/test-suite.entity';
 import { TestRunEntity } from './test-runs/test-runs.entity';
 import { ProjectEntity } from './projects/projects.entity';
-import { ProjectMemberEntity } from './projects/project-member.entity';
+// import { ProjectMemberEntity } from './projects/project-member.entity';
 
 
 @Module({
@@ -24,7 +24,7 @@ import { ProjectMemberEntity } from './projects/project-member.entity';
       password: 'h@#W1Gs6u',
       database: 'tms_db',
       synchronize: true,
-      entities: [UserEntity, TestCaseEntity, TestSuiteEntity, TestRunEntity, ProjectEntity, ProjectMemberEntity]
+      entities: [UserEntity, TestCaseEntity, TestSuiteEntity, TestRunEntity, ProjectEntity]
     }),
     AuthModule,
     ProjectsModule,

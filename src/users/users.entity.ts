@@ -1,7 +1,7 @@
-import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn, OneToMany, ManyToMany } from "typeorm";
 import { ProjectEntity } from "src/projects/projects.entity";
 import { UserRole } from "./user-role.enum";
-import { ProjectMemberEntity } from "src/projects/project-member.entity";
+import { Exclude } from "class-transformer";
 
 @Entity(
     {
@@ -20,15 +20,16 @@ export class UserEntity {
     email:string;
 
     @Column()
+    @Exclude()
     password:string;
 
     @Column({type:'enum', enum: UserRole, default: UserRole.USER})
+    @Exclude()
     role:UserRole
 
     @OneToMany(()=> ProjectEntity, (project) => project.owner, {onDelete: 'CASCADE'})
     projects: ProjectEntity[];
 
-    @OneToMany(()=> ProjectMemberEntity, (member) => member.user, {onDelete: 'CASCADE'})
-    projectMemberships: ProjectMemberEntity[];
-
+    @ManyToMany(() => ProjectEntity, (project) => project.members)
+    project: ProjectEntity[];
 }

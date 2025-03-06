@@ -1,7 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn, ManyToMany, JoinTable } from 'typeorm';
 import { UserEntity } from '../users/users.entity';
 import { TestSuiteEntity } from '../test-suite/test-suite.entity';
-import { ProjectMemberEntity } from './project-member.entity';
+import {Exclude} from 'class-transformer';
 
 @Entity()
 export class ProjectEntity{
@@ -16,6 +16,7 @@ export class ProjectEntity{
     description:string;
 
     @ManyToOne(() => UserEntity, (user) => user.projects, { onDelete: 'CASCADE', eager: true })
+    @Exclude()
     owner: UserEntity;    
 
     @OneToMany(() => TestSuiteEntity, (testSuite) => testSuite.project, { cascade: true })
@@ -24,6 +25,7 @@ export class ProjectEntity{
     @CreateDateColumn()
     createdAt: Date;
 
-    @OneToMany(()=> ProjectMemberEntity, (member) => member.project, {cascade: true})
-    members: ProjectMemberEntity[];
+    @ManyToMany(()=> UserEntity, (user) => user.projects)
+    @JoinTable()
+    members: UserEntity[];
 }

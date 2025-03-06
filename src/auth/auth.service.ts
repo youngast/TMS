@@ -43,7 +43,6 @@ export class AuthService {
         };
     }
 
-    // Авторизация пользователя
     async loginUser(body: LoginDto): Promise<{ accessToken: string }> {
         const user = await this.findByEmail(body.email);
         if (!user) {
@@ -54,10 +53,17 @@ export class AuthService {
         if (!isMatch) {
             throw new UnauthorizedException('Неправильный пароль');
         }
-
-    async getCurrentUser(id: number): Promise<UserEntity> {
-        return accessToken: this.jwtService.sign({ id: user.id, email: user.email }),
+        return {
+            accessToken: this.jwtService.sign({ id: user.id, email: user.email }),
         };
     }
 
+
+    async getCurrentUser(id: number): Promise<string> {
+        const user = await this.findById(id);
+        if (!user) {
+            throw new NotFoundException('Пользователь не найден');
+        }
+        return user.email;
+    }
 }

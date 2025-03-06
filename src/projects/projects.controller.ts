@@ -1,54 +1,54 @@
-import { Controller, Get, Param, ParseIntPipe, Post, Body, Patch,Delete } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Delete, Body, Param, UseGuards, Req, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.entity';
-import { CreateTestCaseDto } from 'src/test-cases/dto/create-test-cases.dto';
-import { CreateTestRunsDto } from 'src/test-runs/dto/create-test-runs.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guards';
+import { Request } from 'express';
+import { UserEntity } from 'src/users/users.entity';
 import { ProjectRoles } from './project-role.enum';
+import { ProjectEntity } from './projects.entity';
+
+interface AuthRequest extends Request {
+    user: UserEntity;
+}
 
 @Controller('projects')
+@UseGuards(JwtAuthGuard)
 export class ProjectsController {
-    constructor(private projectService: ProjectsService){}
+    constructor(private readonly projectsService: ProjectsService) {}
+
+    @Post()
+    async createProject(@Body() body:CreateProjectDto, @Req() req: AuthRequest) {
+        console.log('req.user.id', req.user.id);
+        return this.projectsService.createProject(body, req.user.id);
+    }
 
     @Get()
-    getAllProject(){
-        return this.projectService.getAllProjects();
+    getAllProjects() {
+        return this.projectsService.getAllProjects();
     }
 
     @Get(':id')
-    getProjectById(@Param('id', ParseIntPipe) id: string){
-        return this.projectService.getProjectById(+id);
+    getProjectById(@Param('id') id: number) {
+        return this.projectsService.getProjectById(id);
     }
 
-    @Post(':ownerId')
-    createProject(@Param('ownerId') ownerId: string, @Body() body: CreateProjectDto) {
-        return this.projectService.createProject(+ownerId, body);
+    @Patch(':id')
+    updateProject(@Req() req: AuthRequest, @Param('id') id: number, @Body() body: CreateProjectDto) {
+        return this.projectsService.updateProject(req, id, body);
     }
 
-    @Patch(':id/:ownerId')
-    updateProject(@Param('id') id: string, @Param('ownerId') ownerId: string, @Body() body: CreateProjectDto) {
-        return this.projectService.updateProject(+ownerId, +id, body);
-    }
-    
-    @Delete(':id/:ownerId')
-    deleteProject(@Param('id') id: string, @Param('ownerId') ownerId: string) {
-        return this.projectService.deleteProject(+ownerId, +id);
+    @Delete(':id')
+    deleteProject(@Req() req: AuthRequest, @Param('id') id: number) {
+        return this.projectsService.deleteProject(req, id);
     }
 
-    @Post(':projectId/members/')
-    addMemberProject(@Param('projectId') projectId: string, @Body() body:{userId: string, role: ProjectRoles}) {
-        return this.projectService.addMember(+projectId, +body.userId, body.role);
+    @Post(':projectId/members/:userId')
+    addMember(@Req() req: AuthRequest, @Param('projectId') projectId: number, @Param('userId') userId: number, @Body() body: { role: ProjectRoles }) {
+        return this.projectsService.addMember(req, projectId, userId);
     }
 
     @Delete(':projectId/members/:userId')
-    removeMemberProject(@Param('projectId') projectId: string, @Param('userId') userId: string) {
-        return this.projectService.removeMember(+projectId, +userId);
+    removeMember(@Req() req: AuthRequest, @Param('projectId') projectId: number, @Param('userId') userId: number) {
+        return this.projectsService.removeMember(req, projectId, userId);
     }
-
-
-    // забыл сделать логику обновить роли
-    // @Patch(':projectId/members/:userId')
-    // updateMemberProject(@Param('projectId') projectId: string, @Param('userId') userId: string) {
-    //     return this.projectService.updateMember(+projectId, +userId);
-    // }
-
 }

@@ -13,8 +13,8 @@ export class UsersService {
         @InjectRepository(UserEntity) private userRepository: Repository<UserEntity>
     ) {}
 
-    findAll():Promise<UserEntity[]> {
-        return this.userRepository.find();
+    findAll(id: number, email?: string, ):Promise<UserEntity[]> {
+        return this.userRepository.find({where: {id: id, email: email || null}});
     }
 
     findById(id: number, email?: string): Promise<UserEntity> {

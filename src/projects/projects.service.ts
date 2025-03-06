@@ -1,118 +1,122 @@
-import { Injectable, NotFoundException, ForbiddenException, Inject } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Inject, UseGuards } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { ProjectEntity } from './projects.entity';
 import { UserEntity } from 'src/users/users.entity';
-import { ProjectMemberEntity } from './project-member.entity';
-import { TestSuiteEntity } from 'src/test-suite/test-suite.entity';
-import { TestCaseEntity } from 'src/test-cases/test-cases.entity';
-import { TestRunEntity } from 'src/test-runs/test-runs.entity';
 import { CreateProjectDto } from './dto/create-project.entity';
-import { ProjectRoles } from './project-role.enum';
-import { CreateTestSuiteDto } from 'src/test-suite/dto/create-test-suite.dto';
-import { CreateTestCaseDto } from 'src/test-cases/dto/create-test-cases.dto';
-import { CreateTestRunsDto } from 'src/test-runs/dto/create-test-runs.dto';
+import { Request } from 'express';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guards';
+
+interface AuthRequest extends Request {
+    user: UserEntity;
+}
 
 @Injectable()
+@UseGuards(JwtAuthGuard)
 export class ProjectsService {
-
     constructor(
         @InjectRepository(ProjectEntity) private projectRepository: Repository<ProjectEntity>,
-
         @InjectRepository(UserEntity) private userRepository: Repository<UserEntity>,
-
-        @InjectRepository(ProjectMemberEntity) private projectMemberRepository: Repository<ProjectMemberEntity>,
-
-        @InjectRepository(TestSuiteEntity) private testSuiteRepository: Repository<TestSuiteEntity>,
-
-        @InjectRepository(TestCaseEntity) private testCaseRepository: Repository<TestCaseEntity>,
-
-        @InjectRepository(TestRunEntity) private testRunRepository: Repository<TestRunEntity>,
     ) {}
+    
+    async createProject(body: CreateProjectDto, userId: number): Promise<ProjectEntity> {
+        console.log(`Создаём проект от имени пользователя с ID: ${userId}`);
+        const owner = await this.userRepository.findOne({ where: { id: userId } });
 
-
-
-    async createProject(ownerId:number,body: CreateProjectDto ):Promise<ProjectEntity>{
-        const owner = await this.userRepository.findOne({where:{id: ownerId}});
-        if(!owner){
-            throw new NotFoundException('Юзер не най    ден');
+        if (!owner) {
+            throw new NotFoundException('User not found');
         }
+        console.log('Owner:', owner);
 
         const project = this.projectRepository.create({
-            ...body,
-            owner
+            name:body.name,
+            description:body.description ?? '',
+            owner,
+            members: [],
         });
 
-        await this.projectRepository.save(project);
+        return this.projectRepository.save(project);
+    }
+    
+    async getAllProjects(showRelations = false): Promise<ProjectEntity[]> {
+        if (showRelations) {
+            return this.projectRepository.find({
+                relations: ['owner', 'members'],
+            });
+        }
+        return this.projectRepository.find({
+            select: ['id', 'name', 'description'],
+        });
+    }
 
-        //Сделать юзера Админом
-        const member = this.projectMemberRepository.create({
-            user: owner,
-            project,
-            role:ProjectRoles.ADMIN
+    async getProjectById(id: number): Promise<ProjectEntity> {
+        const project = await this.projectRepository.findOne({
+            where: { id },
+            relations: ['owner', 'members'],
         });
 
-        await this.projectMemberRepository.save(member);
-        return project;
-    }
-
-    async getAllProjects():Promise<ProjectEntity[]>{
-        return this.projectRepository.find({relations: ['owner','members']});
-    }
-
-    async getProjectById(id:number):Promise<ProjectEntity>{
-        const project = await this.projectRepository.findOne({where:{id},relations: ['owner', 'members', 'members.user']});
-        if(!project){
+        if (!project) {
             throw new NotFoundException('Проект не найден');
         }
+
         return project;
     }
 
-    async updateProject(ownerId:number, id:number, body:CreateProjectDto):Promise<ProjectEntity>{
+    async updateProject(req: AuthRequest, id: number, body: CreateProjectDto): Promise<ProjectEntity> {
+        const userId = req.user.id;
         const project = await this.getProjectById(id);
-        if(project.owner.id !== ownerId){
-            throw new ForbiddenException('Вы не можете редактировать этот проект');
+
+        if (project.owner.id !== userId) {
+            throw new ForbiddenException("Вы не можете редактировать этот проект");
         }
+
         Object.assign(project, body);
         return this.projectRepository.save(project);
     }
 
-    async deleteProject(ownerId:number, id:number):Promise<{message: string}>{
+    async deleteProject(req: AuthRequest, id: number): Promise<{ message: string }> {
+        const userId = req.user.id;
         const project = await this.getProjectById(id);
-        if(project.owner.id !== ownerId){
-            throw new ForbiddenException('Вы не можете удалить этот проект');
+
+        if (project.owner.id !== userId) {
+            throw new ForbiddenException("Вы не можете удалить этот проект");
         }
+
         await this.projectRepository.remove(project);
-        return {message: 'Проект удален'}
-        }
-
-    async addMember(projectId:number, userId:number, role:ProjectRoles):Promise<ProjectMemberEntity>{
-        const project = await this.getProjectById(projectId);
-        const user = await this.userRepository.findOne({where:{id: userId}});
-        if(!user){
-            throw new NotFoundException('Юзер не найден');
-        }
-
-        const existinрMember = await this.projectMemberRepository.findOne
-        ({where:{project:{id: projectId}, user:{id: userId}}});
-        if(existinрMember){
-            throw new NotFoundException('Юзер уже есть');
-        }
-
-        const member = this.projectMemberRepository.create({
-            user,project, role
-        });
-        return this.projectMemberRepository.save(member);
+        return { message: "Проект удален" };
     }
 
-    async removeMember(projectId:number, userId:number):Promise<{message: string}>{
-        const member = await this.projectMemberRepository.findOne({where:{project:{id: projectId}, user:{id: userId}}});
+    async addMember(req: AuthRequest, projectId: number, userId: number): Promise<ProjectEntity> {
+        const userIdFromToken = req.user.id;
+        const project = await this.getProjectById(projectId);
 
-        if(!member){
-            throw new NotFoundException('Участник не найден');
+        if (project.owner.id !== userIdFromToken) {
+            throw new ForbiddenException("Вы не можете добавлять участников в этот проект");
         }
 
-        await this.projectMemberRepository.remove(member);
-        return {message: `Участник ${member.user.name} удален`}
+        const user = await this.userRepository.findOne({ where: { id: userId } });
+        if (!user) {
+            throw new NotFoundException("Юзер не найден");
+        }
+
+        if (project.members.some(member => member.id === userId)) {
+            throw new ForbiddenException("Юзер уже есть в проекте");
+        }
+
+        project.members.push(user);
+        return this.projectRepository.save(project);
+    }
+
+    async removeMember(req: AuthRequest, projectId: number, userId: number): Promise<{ message: string }> {
+        const userIdFromToken = req.user.id;
+        const project = await this.getProjectById(projectId);
+
+        if (project.owner.id !== userIdFromToken) {
+            throw new ForbiddenException("Вы не можете удалять участников из этого проекта");
+        }
+
+        project.members = project.members.filter(member => member.id !== userId);
+        await this.projectRepository.save(project);
+        return { message: "Участник удален из проекта" };
     }
 }

@@ -14,8 +14,8 @@ export class UsersController {
 
 
     @Get()
-    getUsers() {
-        return this.usersService.findAll();
+    getUsers(id:string, email?: string) {
+        return this.usersService.findAll(+id, email);
     }
 
     @Get(':id')

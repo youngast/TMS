@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsNotEmpty, IsNumber, IsString } from "class-validator";
 
 export class CreateProjectDto{
 
@@ -8,4 +8,10 @@ export class CreateProjectDto{
 
     @IsString()
     description: string;
+
+    @IsNumber()
+    members: number[];
+
+    @IsNumber()
+    userId: number;
 }
