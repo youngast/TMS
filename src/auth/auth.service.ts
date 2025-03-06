@@ -3,6 +3,7 @@ import { RegisterDto, LoginDto } from './dto/create-auth.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from 'src/users/users.entity';
 import { Repository } from 'typeorm';
+import { UsersService } from 'src/users/users.service';
 
 import * as bcrypt from 'bcrypt';
 
@@ -10,7 +11,8 @@ import * as bcrypt from 'bcrypt';
 export class AuthService {
 
     constructor(
-        @InjectRepository(UserEntity) private userRepository: Repository<UserEntity>
+        @InjectRepository(UserEntity) private userRepository: Repository<UserEntity>,
+        private readonly userService: UsersService
     ){}
 
     findById(id: number): Promise<UserEntity> {
@@ -45,4 +47,7 @@ export class AuthService {
         return user;
     }
 
+    async getCurrentUser(userId: number) {
+        return this.userService.findById(userId);
+      }
 }
