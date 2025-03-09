@@ -14,7 +14,7 @@ export class TestCaseEntity {
   description?: string;
 
   @Column({ type: 'text', nullable: true })
-  steps?: string;
+  steps: string;
 
   @Column({ type: 'text', nullable: true })
   expectedResult?: string;

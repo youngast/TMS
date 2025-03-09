@@ -4,11 +4,12 @@ import { IsEnum } from 'class-validator';
 import { TestSuiteEntity } from 'src/test-suite/test-suite.entity';
 
 export enum TestRunStatus {
-        PASSED = 1,
-        FAILED = 2,
-        SKIPPED = 3,
-        ONWORK = 4,
-    }
+    PASSED = "PASSED",
+    FAILED = "FAILED",
+    SKIPPED = "SKIPPED",
+    ONWORK = "ONWORK",
+  }
+  
 
 
 @Entity()
@@ -29,10 +30,10 @@ export class TestRunEntity {
     @ManyToOne(() => TestSuiteEntity, (testSuit) => testSuit.testRuns, { onDelete: 'CASCADE' })
     testSuite: TestSuiteEntity;
     
-    @Column({ type: 'integer' })
+    @Column({ type: 'enum', enum: TestRunStatus, default: TestRunStatus.ONWORK })
     @IsEnum(TestRunStatus)
     status: TestRunStatus;
-  
+    
     @Column({ type: 'float' })
     executionTime: number;
   

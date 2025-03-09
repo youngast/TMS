@@ -17,70 +17,69 @@ export class TestCasesService {
 
 
     // Создать тест кейс
-    async createTestCase(body:CreateTestCaseDto, projectId: number, testSuiteId: number): Promise<TestCaseEntity> {
-        const testSuite = await this.testSuitesRepository.findOne({
-            where:{project:{id: projectId}, id: testSuiteId},
-            relations: ['project']
-        })
-        if(!testSuite){
-            throw new NotFoundException('Нет тест-сьют')
-        }
-
-        const testcase = this.testCasesRepository.create({
-            title: body.title,
-            description:body.description,
-            steps: body.steps,
-            expectedResult: body.expectedResult,
-            status: body.status,
-            testSuite
-        });
-        return this.testCasesRepository.save(testcase);
-    }
-
-    findallTestCase(projectId: number): Promise<TestCaseEntity[]> {
-        return this.testCasesRepository.find({
-            where: { testSuite: { project: { id: projectId } } },
-            relations: ['testSuite']
-        });
-    }
-
-    async findoneTestCase(id: number): Promise<TestCaseEntity> {
-        const testCase = await this.testCasesRepository.findOne({
-            where: { id },
-            relations: ['testSuite','testSuite.project'],
-        });
-    
-        if (!testCase) {
-            throw new NotFoundException('Тест-кейса нет');
+    async createTestCase(body: CreateTestCaseDto, testSuiteId: number) {
+        const testSuite = await this.testSuitesRepository.findOne({ where: { id: testSuiteId } });
+        if (!testSuite) {
+          throw new NotFoundException("Тест-сьют не найден");
         }
     
-        return testCase;
-    }
+        const testCase = this.testCasesRepository.create({
+          ...body,
+          testSuite,
+        });
     
-
-    async updateTestCase(id: number, body: UpdateTestCaseDto): Promise<TestCaseEntity> {
-        const testCase = await this.findoneTestCase(id);
-    
-        // Если передан testSuiteId, обновляем связь с тест-сьютом
-        if (body.testSuiteId) {
-            const testSuite = await this.testSuitesRepository.findOne({ where: { id: body.testSuiteId } });
-            if (!testSuite) {
-                throw new NotFoundException(`Тест-сьют с id ${body.testSuiteId} не найден`);
-            }
-            testCase.testSuite = testSuite;
-        }
-    
-        Object.assign(testCase, body);
         return this.testCasesRepository.save(testCase);
+      }
+    
+    async findallTestCase(suiteId: number): Promise<TestCaseEntity[]> {
+        if (!suiteId || isNaN(suiteId)) {
+            throw new NotFoundException("Некорректный ID тест-сьюта");
+          }
+          
+          const testCases = await this.testCasesRepository.find({
+            where: { testSuite: { id: suiteId } },
+            relations: ["testSuite"],
+          });
+      
+          if (testCases.length === 0) {
+            throw new NotFoundException("Тест-кейсы не найдены для этого тест-сьюта");
+          }
+      
+          return testCases;
+      
     }
+
+    async getTestCasesBySuiteId(testSuiteId: number) {
+        return this.testCasesRepository.find({
+          where: { testSuite: { id: testSuiteId } },
+          relations: ["testSuite"],
+        });
+      }
+      
+
+    // async updateTestCase(id: number, body: UpdateTestCaseDto): Promise<TestCaseEntity> {
+    //     const testCase = await this.getTestCasesBySuiteId(id);
+    
+    //     // Если передан testSuiteId, обновляем связь с тест-сьютом
+    //     if (body.testSuiteId) {
+    //         const testSuite = await this.testSuitesRepository.findOne({ where: { id: body.testSuiteId } });
+    //         if (!testSuite) {
+    //             throw new NotFoundException(`Тест-сьют с id ${body.testSuiteId} не найден`);
+    //         }
+    //         testCase.testSuite = testSuite;
+    //     }
+    
+    //     Object.assign(testCase, body);
+    //     return this.testCasesRepository.save(testCase);
+    // }
     
 
-    async deleteTestCase(id:number): Promise<{message:string}> {
-        const testcase = await this.findoneTestCase(id);
+    // async deleteTestCase(id:number): Promise<{message:string}> {
+    //     const testcase = await this.getTestCasesBySuiteId(id);
 
-        await this.testCasesRepository.remove(testcase);
+    //     await this.testCasesRepository.remove(testcase);
 
-        return {message: `${testcase.title} удален`};
-    }
+    //     return {message: `${testcase.title} удален`};
+    // }
 
 }

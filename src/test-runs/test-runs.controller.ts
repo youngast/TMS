@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Body, Delete, Param, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Body, Delete, Param, Patch, NotFoundException } from '@nestjs/common';
 import { TestRunsService } from './test-runs.service';
 import { CreateTestRunsDto } from './dto/create-test-runs.dto';
 import { UpdateTestRunsDto } from './dto/update-test-runs.dto';
 
-@Controller('projects/:projectId/test-suites/:testSuiteId/test-cases/:testCaseId/test-runs')
+@Controller('test-suites/:testSuiteId/test-cases/:testCaseId/test-runs')
 export class TestRunsController {
 
     constructor(
@@ -13,19 +13,34 @@ export class TestRunsController {
     }
 
     @Get()
-    getallTestRuns(projectId:string) {
+    getallTestRuns(@Param('projectId') projectId: string) {
         return this.testRunsService.getallTestRuns(+projectId);
     }
 
     @Post()
-
-    createTestRuns(@Body() body:CreateTestRunsDto, @Param('projectId') projectId: string, @Param('testSuiteId') testSuiteId: string, @Param('testCaseId') testCaseId: string){
-        return this.testRunsService.createTestRuns(body, +projectId, +testSuiteId, +testCaseId);
+    async createTestRun(
+      @Param("testSuiteId") testSuiteId: string,
+      @Param("testCaseId") testCaseId: string,
+      @Body() body: CreateTestRunsDto
+    ) {
+      if (!testSuiteId || isNaN(+testSuiteId) || !testCaseId || isNaN(+testCaseId)) {
+        throw new NotFoundException("Некорректный ID тест-сьюта или тест-кейса");
+      }
+  
+      return this.testRunsService.createTestRuns(body, +testSuiteId, +testCaseId);
     }
-
-    @Get(':id')
-    getoneTestRuns(@Param('id') id:string) {
-        return this.testRunsService.getoneTestRuns(+id);
+  
+    @Get()
+    async getTestRuns(
+      @Param("testSuiteId") testSuiteId: string,
+      @Param("testCaseId") testCaseId: string,
+    ) {
+      console.log(`📡 Запрос тест-ранов для testSuiteId=${testSuiteId}, testCaseId=${testCaseId}`);
+      const testRuns = await this.testRunsService.getTestRunsByCaseId(+testSuiteId, +testCaseId);
+      if (!testRuns || testRuns.length === 0) {
+        throw new NotFoundException(`❌ Тест-раны для testSuiteId=${testSuiteId}, testCaseId=${testCaseId} не найдены`);
+      }
+      return testRuns;
     }
 
     @Patch(':id')
