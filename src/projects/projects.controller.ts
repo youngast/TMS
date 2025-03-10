@@ -43,10 +43,15 @@ export class ProjectsController {
     }
 
     @Post(':projectId/members/:userId')
-    addMember(@Req() req: AuthRequest, @Param('projectId') projectId: number, @Param('userId') userId: number, @Body() body: { role: ProjectRoles }) {
-        return this.projectsService.addMember(req, projectId, userId);
+    async addUserToProject(
+      @Req() req: AuthRequest,
+      @Param('projectId') projectId: string,
+      @Param('userId') userId: string
+    ) {
+      return this.projectsService.addMember(req, +projectId,+userId);
     }
-
+  
+    
     @Delete(':projectId/members/:userId')
     removeMember(@Req() req: AuthRequest, @Param('projectId') projectId: number, @Param('userId') userId: number) {
         return this.projectsService.removeMember(req, projectId, userId);

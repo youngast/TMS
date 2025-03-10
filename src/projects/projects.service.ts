@@ -88,25 +88,32 @@ export class ProjectsService {
 
     async addMember(req: AuthRequest, projectId: number, userId: number): Promise<ProjectEntity> {
         const userIdFromToken = req.user.id;
-        const project = await this.getProjectById(projectId);
-
-        if (project.owner.id !== userIdFromToken) {
-            throw new ForbiddenException("Вы не можете добавлять участников в этот проект");
+        const project = await this.projectRepository.findOne({
+          where: { id: projectId },
+          relations: ["owner", "members"],
+        });
+      
+        if (!project) {
+          throw new NotFoundException("Проект не найден");
         }
-
+      
+        if (project.owner.id !== userIdFromToken) {
+          throw new ForbiddenException("Вы не можете добавлять участников в этот проект");
+        }
+      
         const user = await this.userRepository.findOne({ where: { id: userId } });
         if (!user) {
-            throw new NotFoundException("Юзер не найден");
+          throw new NotFoundException("Юзер не найден");
         }
-
+      
         if (project.members.some(member => member.id === userId)) {
-            throw new ForbiddenException("Юзер уже есть в проекте");
+          throw new ForbiddenException("Юзер уже есть в проекте");
         }
-
+      
         project.members.push(user);
         return this.projectRepository.save(project);
-    }
-
+      }
+      
     async removeMember(req: AuthRequest, projectId: number, userId: number): Promise<{ message: string }> {
         const userIdFromToken = req.user.id;
         const project = await this.getProjectById(projectId);

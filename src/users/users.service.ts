@@ -17,17 +17,28 @@ export class UsersService {
         return this.userRepository.find({where: {id: id, email: email || null}});
     }
 
-    findById(id: number, email?: string): Promise<UserEntity> {
-        return this.userRepository.findOne({where: {id: id, email: email || null}});
-    }
-
+    async getUserById(userId: number): Promise<UserEntity> {
+        console.log("🔍 Ищем пользователя с ID:", userId);
+        if (!userId || isNaN(userId)) {
+          throw new NotFoundException('Некорректный ID пользователя');
+        }
+    
+        const user = await this.userRepository.findOne({ where: { id: userId } });
+    
+        if (!user) {
+          throw new NotFoundException('Пользователь не найден');
+        }
+    
+        return user;
+      }
+    
     create(body: CreateUser): Promise<UserEntity> {
         const user = this.userRepository.create(body);
         return this.userRepository.save(user);
     }
 
     async updateUser(body: UpdateUser, id:number): Promise<UserEntity> {
-        const user = await this.findById(id);
+        const user = await this.getUserById(id);
 
         if(!user) {
             throw new NotFoundException('Юзера нет');}
@@ -38,7 +49,7 @@ export class UsersService {
     }
 
     async deleteUser(id:number): Promise<UserEntity> {
-        const user = await this.findById(id);
+        const user = await this.getUserById(id);
 
         if(!user) {
             throw new NotFoundException('Юзера нет');
@@ -48,7 +59,7 @@ export class UsersService {
     }
 
     async changeUserRole(id:number, role:UserRole):Promise<UserEntity>{
-        const user = await this.findById(id);
+        const user = await this.getUserById(id);
         user.role = role;
         return this.userRepository.save(user);
     }

@@ -1,11 +1,13 @@
-import { Controller,ParseIntPipe } from '@nestjs/common';
+import { Controller,ParseIntPipe, Query, Req, UseGuards } from '@nestjs/common';
 import {Get,Post,Patch, Delete, Param, Body} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUser } from './dto/create-users.dto';
 import { UpdateUser } from './dto/update-users.dto';
 import { UserRole } from './user-role.enum';
+import { AuthRequest, JwtAuthGuard  } from 'src/auth/jwt-auth.guards';
 
 @Controller('users')
+@UseGuards(JwtAuthGuard)
 export class UsersController {
 
     constructor(
@@ -14,13 +16,13 @@ export class UsersController {
 
 
     @Get()
-    getUsers(id:string, email?: string) {
-        return this.usersService.findAll(+id, email);
+    getUsers(@Query('id') id: string, @Query('email') email: string) {
+        return this.usersService.findAll(id ? +id : undefined, email);
     }
 
     @Get(':id')
     getUsersById(@Param('id') id:string) {
-        return this.usersService.findById(+id); 
+        return this.usersService.getUserById(+id); 
     }
 
     @Post()
@@ -43,4 +45,8 @@ export class UsersController {
         return this.usersService.changeUserRole(id, role);
     }
 
+    @Get('me')
+    async getCurrentUser(@Req() req: AuthRequest) {
+      return this.usersService.getUserById(req.user.id);
+    }
 }
