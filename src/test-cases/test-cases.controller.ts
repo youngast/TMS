@@ -11,17 +11,18 @@ export class TestCasesController {
     ){}
 
     @Get()
-    async getTestCases(@Param("testSuiteId") testSuiteId: string) {
+    async getTestCases(@Param('testSuiteId') testSuiteId: string) {
       console.log(`⚡ Запрос на получение тест-кейсов для testSuiteId=${testSuiteId}`);
-    
+  
       const testCases = await this.testCasesService.getTestCasesBySuiteId(+testSuiteId);
+  
       if (!testCases || testCases.length === 0) {
         throw new NotFoundException(`Тест-кейсы для testSuiteId=${testSuiteId} не найдены`);
       }
+      
       return testCases;
     }
-    
-    
+
     @Post()
     async createTestCase(
       @Param("testSuiteId") testSuiteId: string,
@@ -30,24 +31,26 @@ export class TestCasesController {
       console.log(`📡 Создание тест-кейса в testSuiteId=${testSuiteId}`);
       return this.testCasesService.createTestCase(body, +testSuiteId);
     }
+
+    @Get(':id')
+    async getTestCaseById(@Param('id') id: string) {
+      console.log(`⚡ Запрос тест-кейса id=${id}`);
+      return this.testCasesService.getTestCaseById(+id);
+    }
+
+    @Patch(':id')
+    async updateTestCase(
+      @Param('id') id: string,
+      @Body() body: UpdateTestCaseDto,
+    ) {
+      console.log(`⚡ Обновление тест-кейса id=${id}`);
+      return this.testCasesService.updateTestCase(+id, body);
+    }
   
-    // @Patch(':id')
-    // update(@Param('id') id:string,@Body() body:UpdateTestCaseDto){
-    //     return this.testCasesService.updateTestCase(+id, body);
-    // }
-
-    // @Delete(':testCaseId')
-    // delete(
-    //     @Param('projectId' ) projectId: string,
-    //     @Param('testSuiteId' ) testSuiteId: string,
-    //     @Param('testCaseId' ) testCaseId: string
-
-    // ){
-    //     if (isNaN(+projectId) || isNaN(+testSuiteId) || isNaN(+testCaseId)) {
-    //         throw new Error('Один из параметров в URL не является числом');
-    //     }
-
-    //     return this.testCasesService.deleteTestCase(+testCaseId);
-    // }
-
+    @Delete(':id')
+    async deleteTestCase(@Param('id') id: string) {
+      console.log(`⚡ Удаление тест-кейса id=${id}`);
+      return this.testCasesService.deleteTestCase(+id);
+    }
+    
 }

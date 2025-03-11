@@ -1,6 +1,7 @@
 import { TestSuiteEntity } from 'src/test-suite/test-suite.entity';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany } from 'typeorm';
 import { TestRunEntity } from 'src/test-runs/test-runs.entity';
+import { Step } from './dto/create-test-cases.dto';
 
 @Entity('test_cases')
 export class TestCaseEntity {
@@ -13,9 +14,9 @@ export class TestCaseEntity {
   @Column({ nullable: true })
   description?: string;
 
-  @Column({ type: 'text', nullable: true })
-  steps: string;
-
+  @Column({ type: "jsonb", nullable: true })
+  steps: Step[];
+  
   @Column({ type: 'text', nullable: true })
   expectedResult?: string;
 

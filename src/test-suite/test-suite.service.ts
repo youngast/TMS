@@ -55,12 +55,7 @@ export class TestSuiteService {
 
         return testSuite;
     }
-
-    async deleteTestSuite(id: number): Promise<{ message: string }> {
-        const testSuite = await this.findOneTestSuite(id);
-        await this.testSuiteRepository.remove(testSuite);
-        return { message: `Test Suite ${testSuite.name} удалён` };
-    }
+    
 
     async findTestSuiteByProjectId(projectId: number): Promise<TestSuiteEntity[]> {
         return this.testSuiteRepository.find({
@@ -70,14 +65,40 @@ export class TestSuiteService {
     }
 
     async updateTestSuite(projectId: number, id: number, body: CreateTestSuiteDto): Promise<TestSuiteEntity> {
-        const testSuite = await this.testSuiteRepository.findOne({ where: { id, project: { id: projectId } } });
+        const testSuite = await this.testSuiteRepository.findOne({
+            where: { id },
+            relations: ['project']
+        });
     
         if (!testSuite) {
-            throw new NotFoundException(`Тест-сьют ID ${id} не найден в проекте ID ${projectId}`);
+            throw new NotFoundException(`Тест-сьют ID ${id} не найден`);
+        }
+    
+        if (testSuite.project.id !== projectId) {
+            throw new NotFoundException(`Тест-сьют ID ${id} не принадлежит проекту ID ${projectId}`);
+        }
+    
+        if (!body || Object.keys(body).length === 0) {
+            throw new BadRequestException("Данные для обновления отсутствуют");
         }
     
         Object.assign(testSuite, body);
         return this.testSuiteRepository.save(testSuite);
+    }
+
+    async deleteTestSuite(projectId: number, id: number): Promise<{ message: string }> {
+        const testSuite = await this.testSuiteRepository.findOne({
+            where: { id },
+            relations: ['project']
+        });
+        if (!testSuite) {
+            throw new NotFoundException(`Тест-сьют ID ${id} не найден`);
+        }
+        if (testSuite.project.id !== projectId) {
+            throw new NotFoundException(`Тест-сьют ID ${id} не принадлежит проекту ID ${projectId}`);
+        }
+        await this.testSuiteRepository.remove(testSuite);
+        return { message: `✅ Тест-сьют "${testSuite.name}" удалён` };
     }
     
 }

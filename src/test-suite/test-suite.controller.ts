@@ -20,13 +20,7 @@ export class TestSuiteController {
     async findAllTestSuite(@Param('projectId') projectId: string){
         return this.testSuiteService.findAllTestSuite(+projectId);
     }
-
-
-    @Delete(':id')
-    async deleteTestSuite(@Param('id') id:string){
-        return this.testSuiteService.deleteTestSuite(+id);
-    }
-
+      
     @Get(':id')
     async findOneTestSuite(
         @Param('id') id:string,
@@ -40,10 +34,17 @@ export class TestSuiteController {
     }
 
     @Patch(':id')
-    async updateTestSuite(@Param('projectId') projectId: string, @Param('id') id: string, @Body() body: CreateTestSuiteDto) {
-        console.log(`🔹 Обновление тест-сьюта ID: ${id} в проекте ID: ${projectId}`);
-        return this.testSuiteService.updateTestSuite(+id, +projectId, body);
-    }
+    async updateTestSuite(@Param('projectId') projectId: string, @Param('id') id: string,@Body() body: CreateTestSuiteDto) {
+    console.log(`Обновление тест-сьюта ${id} в проекте ${projectId}`);
     
+      return this.testSuiteService.updateTestSuite(+projectId, +id, body);
+    }
 
+    @Delete(':id')
+    async deleteTestSuite(@Param('projectId') projectId: string, @Param('id') id: string){
+    console.log(`Удаление тест-сьюта ${id} в проекте ${projectId}`);
+
+        return this.testSuiteService.deleteTestSuite(+projectId, +id);
+    }  
+    
 }

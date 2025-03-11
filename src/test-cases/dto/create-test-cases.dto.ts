@@ -1,25 +1,24 @@
-import { IsString, IsOptional, IsNumber } from "class-validator";
+import { IsString, IsOptional, IsNumber, IsArray } from "class-validator";
+
+export class Step {
+    id: string;
+    step: string;
+    expectedResult: string;
+  }
 
 export class CreateTestCaseDto {
     @IsString()
     title:string;
 
     @IsString()
-    @IsOptional()
     description:string;
 
-    @IsString()
-    @IsOptional()
-    steps:string;
+    @IsArray()
+    steps:Step[];
 
     @IsString()
-    @IsOptional()
     expectedResult: string;
 
     @IsString()
-    @IsOptional()
     status: string;
-    
-    @IsNumber()
-    testSuiteId: number;  
 }

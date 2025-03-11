@@ -17,69 +17,63 @@ export class TestCasesService {
 
 
     // Создать тест кейс
-    async createTestCase(body: CreateTestCaseDto, testSuiteId: number) {
-        const testSuite = await this.testSuitesRepository.findOne({ where: { id: testSuiteId } });
-        if (!testSuite) {
-          throw new NotFoundException("Тест-сьют не найден");
-        }
-    
-        const testCase = this.testCasesRepository.create({
-          ...body,
-          testSuite,
-        });
-    
-        return this.testCasesRepository.save(testCase);
+    async createTestCase(body: CreateTestCaseDto, testSuiteId: number): Promise<TestCaseEntity> {
+      const testSuite = await this.testSuitesRepository.findOne({ where: { id: testSuiteId } });
+      if (!testSuite) {
+        throw new NotFoundException("Тест-сьют не найден");
       }
-    
-    async findallTestCase(suiteId: number): Promise<TestCaseEntity[]> {
-        if (!suiteId || isNaN(suiteId)) {
-            throw new NotFoundException("Некорректный ID тест-сьюта");
-          }
-          
-          const testCases = await this.testCasesRepository.find({
-            where: { testSuite: { id: suiteId } },
-            relations: ["testSuite"],
-          });
-      
-          if (testCases.length === 0) {
-            throw new NotFoundException("Тест-кейсы не найдены для этого тест-сьюта");
-          }
-      
-          return testCases;
-      
+  
+      const testCase = this.testCasesRepository.create({
+        ...body,
+        testSuite,
+        status: body.status || 'new',
+      });
+
+      return this.testCasesRepository.save(testCase);
     }
 
-    async getTestCasesBySuiteId(testSuiteId: number) {
-        return this.testCasesRepository.find({
-          where: { testSuite: { id: testSuiteId } },
-          relations: ["testSuite"],
-        });
+    async getTestCaseById(id: number): Promise<TestCaseEntity> {
+      const testCase = await this.testCasesRepository.findOne({
+        where: { id },
+        relations: ["testSuite"],
+      });
+  
+      if (!testCase) {
+        throw new NotFoundException(`Тест-кейс с id=${id} не найден`);
+      }
+  
+      return testCase;
+    }
+
+    async getTestCasesBySuiteId(testSuiteId: number): Promise<TestCaseEntity[]> {
+      if (!testSuiteId || isNaN(testSuiteId)) {
+          throw new NotFoundException("Некорректный ID тест-сьюта");
       }
       
+      const testCases = await this.testCasesRepository.find({
+          where: { testSuite: { id: testSuiteId } },
+          relations: ["testSuite"],
+      });
+  
+      if (testCases.length === 0) {
+          throw new NotFoundException("Тест-кейсы не найдены для этого тест-сьюта");
+      }
+  
+      return testCases;
+  }
+  
+  async updateTestCase(id: number, body: UpdateTestCaseDto): Promise<TestCaseEntity> {
+    const testCase = await this.getTestCaseById(id);
 
-    // async updateTestCase(id: number, body: UpdateTestCaseDto): Promise<TestCaseEntity> {
-    //     const testCase = await this.getTestCasesBySuiteId(id);
-    
-    //     // Если передан testSuiteId, обновляем связь с тест-сьютом
-    //     if (body.testSuiteId) {
-    //         const testSuite = await this.testSuitesRepository.findOne({ where: { id: body.testSuiteId } });
-    //         if (!testSuite) {
-    //             throw new NotFoundException(`Тест-сьют с id ${body.testSuiteId} не найден`);
-    //         }
-    //         testCase.testSuite = testSuite;
-    //     }
-    
-    //     Object.assign(testCase, body);
-    //     return this.testCasesRepository.save(testCase);
-    // }
-    
+    Object.assign(testCase, body);
+    return this.testCasesRepository.save(testCase);
+  }
 
-    // async deleteTestCase(id:number): Promise<{message:string}> {
-    //     const testcase = await this.getTestCasesBySuiteId(id);
+  async deleteTestCase(id: number): Promise<{ message: string }> {
+    const testCase = await this.getTestCaseById(id);
+    await this.testCasesRepository.remove(testCase);
 
-    //     await this.testCasesRepository.remove(testcase);
-
-    //     return {message: `${testcase.title} удален`};
-    // }
+    return { message: `Тест-кейс "${testCase.title}" удален` };
+  }
 
 }
