@@ -62,4 +62,22 @@ export class TestSuiteService {
         return { message: `Test Suite ${testSuite.name} удалён` };
     }
 
+    async findTestSuiteByProjectId(projectId: number): Promise<TestSuiteEntity[]> {
+        return this.testSuiteRepository.find({
+            where: { project: { id: projectId } },
+            relations: ['project']
+        });
+    }
+
+    async updateTestSuite(projectId: number, id: number, body: CreateTestSuiteDto): Promise<TestSuiteEntity> {
+        const testSuite = await this.testSuiteRepository.findOne({ where: { id, project: { id: projectId } } });
+    
+        if (!testSuite) {
+            throw new NotFoundException(`Тест-сьют ID ${id} не найден в проекте ID ${projectId}`);
+        }
+    
+        Object.assign(testSuite, body);
+        return this.testSuiteRepository.save(testSuite);
+    }
+    
 }
