@@ -1,6 +1,7 @@
 import { Injectable, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from "express";
+import * as jwt from "jsonwebtoken";
 
 export interface AuthRequest extends Request {
   user: {
@@ -10,7 +11,6 @@ export interface AuthRequest extends Request {
   };
 }
 
-
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
   canActivate(context: ExecutionContext) {
@@ -19,6 +19,12 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
   handleRequest(err, user, info, context: ExecutionContext) {
     if (err || !user) {
+      console.log("🚨 Ошибка аутентификации:", info?.message || err?.message);
+
+      if (info?.name === "TokenExpiredError") {
+        throw new UnauthorizedException("Срок действия токена истек, выполните повторный вход");
+      }
+
       throw new UnauthorizedException('Требуется авторизация');
     }
 
