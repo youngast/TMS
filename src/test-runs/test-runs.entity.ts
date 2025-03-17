@@ -1,43 +1,35 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, CreateDateColumn } from 'typeorm';
 import { TestCaseEntity } from 'src/test-cases/test-cases.entity';
-import { IsEnum } from 'class-validator';
-import { TestSuiteEntity } from 'src/test-suite/test-suite.entity';
+
 
 export enum TestRunStatus {
-    PASSED = "PASSED",
-    FAILED = "FAILED",
-    SKIPPED = "SKIPPED",
-    ONWORK = "ONWORK",
-  }
-  
+  PASSED = "PASSED",
+  FAILED = "FAILED",
+  SKIPPED = "SKIPPED",
+  ONWORK = "ONWORK",
+}
 
-
-@Entity()
+@Entity('test_runs')
 export class TestRunEntity {
-
     @PrimaryGeneratedColumn()
     id: number;
-  
-    @Column()
-    title:string;
 
     @Column()
-    description:string;
+    title: string;
 
-    @ManyToOne(() => TestCaseEntity, (testCase) => testCase.testRuns, { onDelete: 'CASCADE' })
-    testCase: TestCaseEntity;
+    @Column({ nullable: true })
+    description: string;
 
-    @ManyToOne(() => TestSuiteEntity, (testSuit) => testSuit.testRuns, { onDelete: 'CASCADE' })
-    testSuite: TestSuiteEntity;
-    
-    @Column({ type: 'enum', enum: TestRunStatus, default: TestRunStatus.ONWORK })
-    @IsEnum(TestRunStatus)
-    status: TestRunStatus;
-    
-    @Column({ type: 'float' })
+    @Column({ default: 'ONWORK' })
+    status: string;
+
+    @Column({ default: 0 })
     executionTime: number;
-  
+
     @CreateDateColumn()
-    createdAt: Date;  
-    
+    createdAt: Date;
+
+    @ManyToMany(() => TestCaseEntity)
+    @JoinTable()
+    testCases: TestCaseEntity[];
 }

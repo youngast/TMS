@@ -1,5 +1,5 @@
 import { TestSuiteEntity } from 'src/test-suite/test-suite.entity';
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, ManyToMany } from 'typeorm';
 import { TestRunEntity } from 'src/test-runs/test-runs.entity';
 import { Step } from './dto/create-test-cases.dto';
 
@@ -32,7 +32,7 @@ export class TestCaseEntity {
   @ManyToOne(() => TestSuiteEntity, (testSuite) => testSuite.testCases, { onDelete: 'CASCADE' })
   testSuite: TestSuiteEntity;
 
-  @OneToMany(() => TestRunEntity, (testRun) => testRun.testCase, { onDelete: 'CASCADE' })
+  @ManyToMany(() => TestRunEntity, (testRun) => testRun.testCases)
   testRuns: TestRunEntity[];
 
 }

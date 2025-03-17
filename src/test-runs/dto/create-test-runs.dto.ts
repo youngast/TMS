@@ -1,24 +1,29 @@
-import { IsNumber, IsNotEmpty, IsIn, IsString } from "class-validator";
+import { IsOptional, IsString, IsNumber, IsArray, IsEnum, ValidateIf } from 'class-validator';
+import { TestRunStatus } from '../test-runs.entity';
 
 export class CreateTestRunsDto {
-
-    @IsNotEmpty()
     @IsString()
-    title:string;
+    title: string;
 
     @IsString()
-    description:string;
+    description: string;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsNumber()
-    testCaseId: number;
+    executionTime?: number;
 
-    @IsNotEmpty()
-    @IsIn([1,2,3,4])
-    status: number;
+    @IsOptional()
+    @IsEnum(TestRunStatus)
+    status?: TestRunStatus;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsNumber()
-    executionTime: number;
+    @ValidateIf((o) => !o.testCaseIds || o.testCaseIds.length === 0)
+    testSuiteId?: number;
 
+    @IsOptional()
+    @IsArray()
+    @IsNumber({}, { each: true })
+    @ValidateIf((o) => !o.testSuiteId)
+    testCaseIds?: number[];
 }

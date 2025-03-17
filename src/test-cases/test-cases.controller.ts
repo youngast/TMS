@@ -12,7 +12,7 @@ export class TestCasesController {
 
     @Get()
     async getTestCases(@Param('testSuiteId') testSuiteId: string) {
-      console.log(`⚡ Запрос на получение тест-кейсов для testSuiteId=${testSuiteId}`);
+      console.log(`Получение тест-кейсов для testSuiteId=${testSuiteId}`);
   
       const testCases = await this.testCasesService.getTestCasesBySuiteId(+testSuiteId);
   
@@ -28,13 +28,13 @@ export class TestCasesController {
       @Param("testSuiteId") testSuiteId: string,
       @Body() body: CreateTestCaseDto
     ) {
-      console.log(`📡 Создание тест-кейса в testSuiteId=${testSuiteId}`);
+      console.log(`Создание тест-кейса в testSuiteId=${testSuiteId}`);
       return this.testCasesService.createTestCase(body, +testSuiteId);
     }
 
     @Get(':id')
     async getTestCaseById(@Param('id') id: string) {
-      console.log(`⚡ Запрос тест-кейса id=${id}`);
+      console.log(`Запрос тест-кейса id=${id}`);
       return this.testCasesService.getTestCaseById(+id);
     }
 
@@ -43,13 +43,13 @@ export class TestCasesController {
       @Param('id') id: string,
       @Body() body: UpdateTestCaseDto,
     ) {
-      console.log(`⚡ Обновление тест-кейса id=${id}`);
+      console.log(`Обновление тест-кейса id=${id}`);
       return this.testCasesService.updateTestCase(+id, body);
     }
   
     @Delete(':id')
     async deleteTestCase(@Param('id') id: string) {
-      console.log(`⚡ Удаление тест-кейса id=${id}`);
+      console.log(`Удаление тест-кейса id=${id}`);
       return this.testCasesService.deleteTestCase(+id);
     }
     
