@@ -17,4 +17,7 @@ export class TestSuiteEntity {
 
     @ManyToOne(()=> ProjectEntity, (project) => project.testSuites, {onDelete: 'CASCADE', eager: true})
     project: ProjectEntity;
+    
+    @OneToMany(() => TestRunEntity, (testRun) => testRun.testSuite)
+    testRuns: TestRunEntity[];
 }

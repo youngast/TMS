@@ -7,49 +7,59 @@ import { UpdateTestRunsDto } from './dto/update-test-runs.dto';
 export class TestRunsController {
     constructor(private testRunsService: TestRunsService) {}
 
-    // Получить все тест-раны в проекте
     @Get()
-    getAllTestRuns(@Param('projectId') projectId: string) {
-        return this.testRunsService.getAllTestRuns(+projectId);
-    }
-
-    // Получить тест-раны по тест-кейсу
-    @Get('test-case/:testCaseId')
-    async getTestRunsByCase(@Param('testCaseId') testCaseId: string) {
-        const testRuns = await this.testRunsService.getTestRunsByCaseId(+testCaseId);
-        if (!testRuns || testRuns.length === 0) {
-            throw new NotFoundException(`Тест-раны для testCaseId=${testCaseId} не найдены`);
-        }
+    async getAllTestRuns(@Param('projectId') projectId: string) {
+        const testRuns = await this.testRunsService.getAllTestRuns(+projectId);
+        console.log("Test runs from DB:", testRuns); 
         return testRuns;
+    }    
+
+    @Get(':id')
+    async getTestRunById(@Param('id') testRunId: string) {
+        const testRun = await this.testRunsService.getTestRunById(+testRunId);
+        if (!testRun) {
+            throw new NotFoundException(`Тест-ран с ID=${testRunId} не найден`);
+        }
+        return testRun;
     }
 
-    // Создать пустой тест-ран
     @Post('empty')
     createEmptyTestRun(@Body() body: { title: string, description: string }) {
         return this.testRunsService.createEmptyTestRun(body.title, body.description);
     }
 
-    // Добавить тест-кейс в существующий тест-ран
     @Post(':testRunId/add-test-case/:testCaseId')
     addTestCaseToRun(@Param('testRunId') testRunId: string, @Param('testCaseId') testCaseId: string) {
         return this.testRunsService.addTestCaseToRun(+testRunId, +testCaseId);
     }
 
-    // Создать тест-ран с тест-сьютом или выбранными тест-кейсами
     @Post()
-    createTestRunWithCases(@Param('projectId') projectId: string, @Body() body: CreateTestRunsDto) {
+    async createTestRun(@Param('projectId') projectId: string, @Body() body: CreateTestRunsDto) {
         return this.testRunsService.createTestRunWithCases(body, +projectId);
     }
 
-    // Обновить тест-ран (например, изменить статус или добавить тест-кейсы)
     @Patch(':id')
     updateTestRun(@Param('id') id: string, @Body() body: UpdateTestRunsDto) {
         return this.testRunsService.updateTestRuns(+id, body);
     }
 
-    // Удалить тест-ран
     @Delete(':id')
     deleteTestRun(@Param('id') id: string) {
         return this.testRunsService.deleteTestRuns(+id);
+    }
+
+    @Patch('/test-cases/:testCaseId/status')
+    async updateTestCaseStatus(
+        @Param('projectId') projectId: string,
+        @Param('testCaseId') testCaseId: string,
+        @Body() body: { status: string }
+    ) {
+        console.log(`Updating test case ${testCaseId} in project ${projectId} with status ${body.status}`);
+        return this.testRunsService.updateTestCaseStatus(+testCaseId, body.status);
+    }     
+
+    @Patch(':id/complete')
+    async completeTestRun(@Param('id') testRunId: string) {
+        return this.testRunsService.completeTestRun(+testRunId);
     }
 }

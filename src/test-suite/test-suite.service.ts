@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateTestSuiteDto } from './dto/create-test-suite.dto';
 import { TestSuiteEntity } from './test-suite.entity';
 import { ProjectEntity } from 'src/projects/projects.entity';
-
+import { TestRunEntity } from 'src/test-runs/test-runs.entity';
 
 @Injectable()
 export class TestSuiteService {
@@ -12,6 +12,7 @@ export class TestSuiteService {
     constructor(
         @InjectRepository(TestSuiteEntity) private testSuiteRepository: Repository<TestSuiteEntity>,
         @InjectRepository(ProjectEntity) private projectRepository: Repository<ProjectEntity>,
+        @InjectRepository(TestRunEntity) private testRunsRepository: Repository<TestRunEntity>,
     ){
 
     }
@@ -22,7 +23,6 @@ export class TestSuiteService {
             relations: ['project']
         });        
     }
-
 
     async createTestSuite(body: CreateTestSuiteDto, projectId: number): Promise<TestSuiteEntity> {
         if (isNaN(projectId)) {
@@ -101,4 +101,21 @@ export class TestSuiteService {
         return { message: `✅ Тест-сьют "${testSuite.name}" удалён` };
     }
     
+    async searchTestSuites(projectId: number, search: string) {
+     const query = this.testSuiteRepository.createQueryBuilder('testSuite')
+        .where('testSuite.projectId = :projectId', { projectId })
+
+        if(search) {
+            query.andWhere('testSuite.name LIKE :search', { search: `%${search}%` });
+        }
+
+        return query.getMany();
+    }
+
+    async getTestRunsByTestSuiteId(testSuiteId: number): Promise<TestRunEntity[]> {
+        return this.testRunsRepository.find({
+            where: { testSuite: { id: testSuiteId } },
+            relations: ['testCases'],
+        });
+    }
 }

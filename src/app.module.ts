@@ -11,11 +11,14 @@ import { TestSuiteModule } from './test-suite/test-suite.module';
 import { TestSuiteEntity } from './test-suite/test-suite.entity';
 import { TestRunEntity } from './test-runs/test-runs.entity';
 import { ProjectEntity } from './projects/projects.entity';
+import { TestRunsService } from './test-runs/test-runs.service';
+import { TestRunsController } from './test-runs/test-runs.controller';
+import { TestCasesController } from './test-cases/test-cases.controller';
 // import { ProjectMemberEntity } from './projects/project-member.entity';
 
 
 @Module({
-  imports: [UsersModule,
+  imports: [UsersModule,TestRunsModule, TestCasesModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
@@ -32,5 +35,7 @@ import { ProjectEntity } from './projects/projects.entity';
     TestRunsModule,
     TestSuiteModule,
   ],
+  controllers: [TestRunsController, TestCasesController],
+  providers: [TestRunsService],
 })
 export class AppModule {}

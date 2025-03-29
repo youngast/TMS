@@ -2,12 +2,14 @@ import { Controller,Get,Post,Patch,Delete,Body,Param, NotFoundException } from '
 import { TestCasesService } from './test-cases.service';
 import { CreateTestCaseDto } from './dto/create-test-cases.dto';
 import { UpdateTestCaseDto } from './dto/update-test-cases.dto';
+import { TestRunsService } from 'src/test-runs/test-runs.service';
 
 @Controller('test-suites/:testSuiteId/test-cases')
 export class TestCasesController {
 
     constructor(
-        private testCasesService: TestCasesService
+        private testCasesService: TestCasesService,
+        private testRunsService: TestRunsService
     ){}
 
     @Get()
@@ -53,4 +55,19 @@ export class TestCasesController {
       return this.testCasesService.deleteTestCase(+id);
     }
     
+    @Get('search/:searchTerm')
+    async searchTestCase(@Param('searchTerm') searchTerm: string) {
+      console.log(`Поиск тест-кейсов по searchTerm=${searchTerm}`);
+      return this.testCasesService.searchTestCase(searchTerm);
+    }
+
+    @Patch(':testCaseId/status')
+    async updateTestCaseStatus(
+        @Param('projectId') projectId: string,
+        @Param('testCaseId') testCaseId: string,
+        @Body() body: { status: string }
+    ) {
+        console.log(`Updating test case ${testCaseId} in project ${projectId} with status ${body.status}`);
+        return this.testRunsService.updateTestCaseStatus(+testCaseId, body.status);
+    }
 }

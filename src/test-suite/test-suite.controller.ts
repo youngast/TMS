@@ -2,19 +2,26 @@ import { BadRequestException, Controller, Delete, Patch, Put } from '@nestjs/com
 import {Post,Get,Body, Param} from '@nestjs/common';
 import { TestSuiteService } from './test-suite.service';
 import { CreateTestSuiteDto } from './dto/create-test-suite.dto';
+import { TestRunsService } from '../test-runs/test-runs.service'; 
 
 @Controller('projects/:projectId/test-suites')
 export class TestSuiteController {
 
     constructor(
-        private testSuiteService: TestSuiteService
+        private testSuiteService: TestSuiteService,
+        private testRunsService: TestRunsService,
     ){}
 
     @Post()
     async createTestSuite(@Body() body: CreateTestSuiteDto, @Param('projectId') projectId: string){ {
         return this.testSuiteService.createTestSuite(body, +projectId);
     }
-}
+    }
+
+    @Get()
+    async searchTestSuites(@Param('projectId') projectId: string, @Param('search') search: string) {
+        return this.testSuiteService.searchTestSuites(+projectId, search);
+    }
 
     @Get()
     async findAllTestSuite(@Param('projectId') projectId: string){
@@ -46,5 +53,9 @@ export class TestSuiteController {
 
         return this.testSuiteService.deleteTestSuite(+projectId, +id);
     }  
-    
+
+    @Get(':id/test-runs')
+    async getTestRunsByTestSuite(@Param('id') testSuiteId: string) {
+        return this.testRunsService.getTestRunById(+testSuiteId);
+    }
 }

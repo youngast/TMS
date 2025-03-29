@@ -76,4 +76,13 @@ export class TestCasesService {
     return { message: `Тест-кейс "${testCase.title}" удален` };
   }
 
+  async searchTestCase(searchTerm: string): Promise<TestCaseEntity[]> {
+    return this.testCasesRepository.find({
+      where: [
+        { title: searchTerm },
+        { description: searchTerm },
+      ],
+    });
+  }
+
 }

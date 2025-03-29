@@ -14,7 +14,7 @@ export class TestCaseEntity {
   @Column({ nullable: true })
   description?: string;
 
-  @Column({ type: "jsonb", nullable: true })
+  @Column({ type: "jsonb", default: [] })
   steps: Step[];
   
   @Column({ type: 'text', nullable: true })
