@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TestRunEntity } from './test-runs.entity';
 import { Repository, In, DeepPartial } from 'typeorm';
@@ -163,10 +163,53 @@ export class TestRunsService {
     }
 
     async completeTestRun(testRunId: number): Promise<TestRunEntity> {
-        const testRun = await this.testRunsRepository.findOne({ where: { id: testRunId } });
-        if (!testRun) throw new NotFoundException(`Тест-ран с ID=${testRunId} не найден`);
+        const testRun = await this.testRunsRepository.findOne({
+          where: { id: testRunId },
+          relations: ['testCases'],
+        });
+        if (!testRun) {
+          throw new NotFoundException(`Тест-ран с ID=${testRunId} не найден`);
+        }
     
-        testRun.status = "COMPLETED";
+        switch (testRun.status) {
+          case TestRunStatus.ONWORK:
+            break;
+          case TestRunStatus.FAILED:
+            throw new BadRequestException('Тест-ран уже завершён ошибкой');
+          case TestRunStatus.PASSED:
+          case TestRunStatus.SKIPPED:
+            throw new BadRequestException(
+              `Тест-ран уже имеет конечный статус: ${testRun.status}`,
+            );
+          default:
+            throw new BadRequestException('Неизвестный статус тест-рана');
+        }
+    
+        if (testRun.testCases && testRun.testCases.length > 0) {
+          const hasFailed = testRun.testCases.some(
+            (tc: TestCaseEntity) => tc.status === TestRunStatus.FAILED,
+          );
+          const hasSkipped = testRun.testCases.some(
+            (tc: TestCaseEntity) => tc.status === TestRunStatus.SKIPPED,
+          );
+          const allPassed = testRun.testCases.every(
+            (tc: TestCaseEntity) => tc.status === TestRunStatus.PASSED,
+          );
+    
+          if (hasFailed) {
+            testRun.status = TestRunStatus.FAILED;
+          } else if (hasSkipped && !allPassed) {
+            testRun.status = TestRunStatus.SKIPPED;
+          } else if (allPassed) {
+            testRun.status = TestRunStatus.PASSED;
+          } else {
+            testRun.status = TestRunStatus.PASSED; 
+          }
+        } else {
+          testRun.status = TestRunStatus.SKIPPED;
+        }
+    
         return this.testRunsRepository.save(testRun);
-    }    
+      }
+      
 }
