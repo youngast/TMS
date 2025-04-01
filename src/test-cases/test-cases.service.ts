@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TestCaseEntity } from './test-cases.entity';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { CreateTestCaseDto } from './dto/create-test-cases.dto';
 import { UpdateTestCaseDto } from './dto/update-test-cases.dto';
 import { TestSuiteEntity } from 'src/test-suite/test-suite.entity';
@@ -79,8 +79,8 @@ export class TestCasesService {
   async searchTestCase(searchTerm: string): Promise<TestCaseEntity[]> {
     return this.testCasesRepository.find({
       where: [
-        { title: searchTerm },
-        { description: searchTerm },
+        { title: ILike(`%${searchTerm}%`) },
+        { description: ILike(`%${searchTerm}%`) },
       ],
     });
   }

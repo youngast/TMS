@@ -1,11 +1,12 @@
 import { Controller, Post, Get, Patch, Delete, Body, Param, UseGuards, Req, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.entity';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guards';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guards';
 import { Request } from 'express';
 import { UserEntity } from 'src/users/users.entity';
 import { ProjectRoles } from './project-role.enum';
 import { ProjectEntity } from './projects.entity';
+import { ProjectAccessGuard } from 'src/auth/guards/project-access.guard';
 
 interface AuthRequest extends Request {
     user: UserEntity;
@@ -27,10 +28,10 @@ export class ProjectsController {
         return this.projectsService.getAllProjects();
     }
 
-    @Get(':id')
-    getProjectById(@Param('id') id: number) {
-        return this.projectsService.getProjectById(id);
-    }
+    // @Get(':id')
+    // getProjectById(@Param('id') id: number) {
+    //     return this.projectsService.getProjectById(id);
+    // }
 
     @Patch(':id')
     updateProject(@Req() req: AuthRequest, @Param('id') id: number, @Body() body: CreateProjectDto) {
@@ -42,18 +43,38 @@ export class ProjectsController {
         return this.projectsService.deleteProject(req, id);
     }
 
-    @Post(':projectId/members/:userId')
-    async addUserToProject(
+    @Post(':projectId/members/:email')
+    addUserToProject(
       @Req() req: AuthRequest,
-      @Param('projectId') projectId: string,
-      @Param('userId') userId: string
+      @Param('projectId') projectId: number,
+      @Param('email') email: string
     ) {
-      return this.projectsService.addMember(req, +projectId,+userId);
+      return this.projectsService.addMember(req, projectId, email);
     }
-  
     
-    @Delete(':projectId/members/:userId')
-    removeMember(@Req() req: AuthRequest, @Param('projectId') projectId: number, @Param('userId') userId: number) {
-        return this.projectsService.removeMember(req, projectId, userId);
+    @Delete(':projectId/members/:email')
+    removeUserFromProject(
+      @Req() req: AuthRequest,
+      @Param('projectId') projectId: number,
+      @Param('email') email: string
+    ) {
+      return this.projectsService.removeMember(req, projectId, email);
     }
+
+    @Get('name')
+    FindByName(@Param('name') name: string) {
+        return this.projectsService.FindByName(name);
+    }
+
+    @Get('/myproject')
+    getMyProjects(@Req() req: AuthRequest) {
+    return this.projectsService.getProjectsByUser(req.user.id);
+    }
+
+    @UseGuards(ProjectAccessGuard)
+    @Get(':projectId')
+    getProject(@Param('projectId') projectId: number) {
+      return this.projectsService.getProjectById(projectId);
+    }
+
 }
