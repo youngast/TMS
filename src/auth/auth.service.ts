@@ -6,6 +6,7 @@ import { RegisterDto, LoginDto } from './dto/create-auth.dto';
 import { UserEntity } from '../users/users.entity';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { UserRole } from 'src/users/user-role.enum';
 
 @Injectable()
 export class AuthService {
@@ -65,5 +66,5 @@ export class AuthService {
             throw new NotFoundException('Пользователь не найден');
         }
         return {id: user.id, name: user.name, email: user.email, role: user.role};
-    }
+    }      
 }

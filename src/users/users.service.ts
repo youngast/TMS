@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './users.entity';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { CreateUser } from './dto/create-users.dto';
 import { UpdateUser } from './dto/update-users.dto';
 import { UserRole } from './user-role.enum';
@@ -13,8 +13,12 @@ export class UsersService {
         @InjectRepository(UserEntity) private userRepository: Repository<UserEntity>
     ) {}
 
-    findAll(id: number, email?: string, ):Promise<UserEntity[]> {
-        return this.userRepository.find({where: {id: id, email: email || null}});
+    findAll(email: string, ):Promise<UserEntity[]> {
+        return this.userRepository.find({
+            where: {
+                email: ILike(`%${email}%`),
+            },
+        });
     }
 
     async getUserById(userId: number): Promise<UserEntity> {
