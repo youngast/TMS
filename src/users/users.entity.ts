@@ -19,12 +19,11 @@ export class UserEntity {
     @Column({unique: true})
     email:string;
 
-    @Column()
     @Exclude()
+    @Column()
     password:string;
 
     @Column({type:'enum', enum: UserRole, default: UserRole.USER})
-    @Exclude()
     role:UserRole
 
     @OneToMany(()=> ProjectEntity, (project) => project.owner, {onDelete: 'CASCADE'})

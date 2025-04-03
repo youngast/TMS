@@ -16,7 +16,6 @@ export class ProjectEntity{
     description:string;
 
     @ManyToOne(() => UserEntity, (user) => user.projects, { onDelete: 'CASCADE', eager: true })
-    @Exclude()
     owner: UserEntity;    
 
     @OneToMany(() => TestSuiteEntity, (testSuite) => testSuite.project, { cascade: true })

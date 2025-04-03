@@ -160,9 +160,25 @@ export class ProjectsService {
             { owner: { id: userId } },
             { members: { id: userId } },
           ],
-          relations: ['owner', 'members'],
+          select: {
+            id: true,
+            name: true,
+            owner: {
+              id: true,
+              email: true,
+              name: true,
+            },
+            members: {
+              id: true,
+              email: true,
+              name: true,
+            },
+          },
+          relations: {
+            owner: true,
+            members: true,
+          },
         });
-
         if (!projects || projects.length === 0) {
             throw new ForbiddenException('Нет проектов');
           }
