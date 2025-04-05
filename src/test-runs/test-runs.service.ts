@@ -8,6 +8,8 @@ import { UpdateTestRunsDto } from './dto/update-test-runs.dto';
 import { TestRunStatus } from './test-runs.entity';
 import { TestSuiteEntity } from 'src/test-suite/test-suite.entity';
 
+import * as puppeteer from 'puppeteer';
+
 @Injectable()
 export class TestRunsService {
     constructor(
@@ -211,5 +213,67 @@ export class TestRunsService {
     
         return this.testRunsRepository.save(testRun);
       }
-      
+
+      async exportTestRunToPdf(testRunId: number): Promise<Buffer> {
+        const testRun = await this.testRunsRepository.findOne({
+            where: { id: testRunId },
+            relations: ['testCases', 'testCases.testSuite'],
+        });
+    
+        if (!testRun) {
+            throw new NotFoundException(`Тест-ран с ID=${testRunId} не найден`);
+        }
+    
+        const html = this.generateHtmlReport(testRun);
+    
+        const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
+        const page = await browser.newPage();
+        await page.setContent(html, { waitUntil: 'networkidle0' });
+        const pdfBuffer = await page.pdf({ format: 'A4' });
+        await browser.close();
+    
+        return Buffer.from(pdfBuffer);
+    }
+    
+    private generateHtmlReport(testRun: TestRunEntity): string {
+        const rows = testRun.testCases.map(tc => `
+            <tr>
+                <td>${tc.title}</td>
+                <td>${tc.status || '—'}</td>
+                <td>${tc.testSuite?.name || '—'}</td>
+            </tr>
+        `).join('');
+    
+        return `
+        <html>
+            <head>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 20px; }
+                    h1 { text-align: center; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                    th, td { border: 1px solid #ddd; padding: 8px; }
+                    th { background-color: #f2f2f2; }
+                </style>
+            </head>
+            <body>
+                <h1>Тест-ран: ${testRun.title}</h1>
+                <p><strong>Описание:</strong> ${testRun.description || '—'}</p>
+                <p><strong>Статус:</strong> ${testRun.status}</p>
+                <p><strong>Количество кейсов:</strong> ${testRun.testCases.length}</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Название кейса</th>
+                            <th>Статус</th>
+                            <th>Тест-сьют</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows}
+                    </tbody>
+                </table>
+            </body>
+        </html>
+        `;
+    }
 }

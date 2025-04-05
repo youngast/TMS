@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Delete, Param, Patch, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Delete, Param, Patch, NotFoundException, Header, Res } from '@nestjs/common';
 import { TestRunsService } from './test-runs.service';
 import { CreateTestRunsDto } from './dto/create-test-runs.dto';
 import { UpdateTestRunsDto } from './dto/update-test-runs.dto';
+import { Response } from 'express';
 
 @Controller('projects/:projectId/test-runs')
 export class TestRunsController {
@@ -61,5 +62,18 @@ export class TestRunsController {
     @Patch(':id/complete')
     async completeTestRun(@Param('id') testRunId: string) {
         return this.testRunsService.completeTestRun(+testRunId);
+    }
+
+    @Get(':id/export-to-pdf')
+    async exportPdf(@Param('id') id: number, @Res() res: Response) {
+        const pdf = await this.testRunsService.exportTestRunToPdf(id);
+    
+        res.set({
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': 'attachment; filename="test-run.pdf"',
+            'Content-Length': pdf.length,
+        });
+    
+        res.send(pdf);
     }
 }
