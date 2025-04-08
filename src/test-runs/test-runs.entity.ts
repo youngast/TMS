@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, CreateDateColumn, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, CreateDateColumn,  ManyToOne, UpdateDateColumn } from 'typeorm';
 import { TestCaseEntity } from 'src/test-cases/test-cases.entity';
 import { TestSuiteEntity } from 'src/test-suite/test-suite.entity';
 
@@ -29,6 +29,10 @@ export class TestRunEntity {
 
     @CreateDateColumn()
     createdAt: Date;
+
+    @UpdateDateColumn()
+    @Column({ nullable: true })
+    updatedAt: Date;
 
     @ManyToOne(() => TestSuiteEntity, (testSuite) => testSuite.testRuns, { nullable: true, onDelete: 'SET NULL' })
     testSuite: TestSuiteEntity;

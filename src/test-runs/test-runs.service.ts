@@ -210,6 +210,8 @@ export class TestRunsService {
         } else {
           testRun.status = TestRunStatus.SKIPPED;
         }
+
+        testRun.updatedAt = new Date();
     
         return this.testRunsRepository.save(testRun);
       }
