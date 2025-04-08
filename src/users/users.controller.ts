@@ -1,4 +1,4 @@
-import { Controller,ParseIntPipe, Query, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Controller,ParseIntPipe, Query, Req, UseGuards } from '@nestjs/common';
 import {Get,Post,Patch, Delete, Param, Body} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUser } from './dto/create-users.dto';
@@ -32,9 +32,16 @@ export class UsersController {
     }
 
     @Patch(':id')
-    updateUser(@Param() id: string, @Body() body: UpdateUser) {
-        return this.usersService.updateUser(body, +id);
+    updateUser(@Param('id') id: string, @Body() body: UpdateUser) {
+      const numericId = +id;
+    
+      if (isNaN(numericId)) {
+        throw new BadRequestException('Неверный формат ID');
+      }
+    
+      return this.usersService.updateUser(body, numericId);
     }
+    
 
     @Delete(':id')
     removeUser(@Param() id:string) {

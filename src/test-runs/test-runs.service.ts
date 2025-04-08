@@ -144,6 +144,8 @@ export class TestRunsService {
             testRun.testCases = testCases;
         }
 
+        testRun.updatedAt = new Date();
+
         Object.assign(testRun, body);
         return this.testRunsRepository.save(testRun);
     }

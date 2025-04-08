@@ -43,7 +43,6 @@ export class UsersService {
 
     async updateUser(body: UpdateUser, id:number): Promise<UserEntity> {
         const user = await this.getUserById(id);
-
         if(!user) {
             throw new NotFoundException('Юзера нет');}
 
