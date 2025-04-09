@@ -1,17 +1,20 @@
-import { BadRequestException, Controller,ParseIntPipe, Query, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Controller,ParseIntPipe, Query, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import {Get,Post,Patch, Delete, Param, Body} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUser } from './dto/create-users.dto';
 import { UpdateUser } from './dto/update-users.dto';
 import { UserRole } from './user-role.enum';
 import { AuthRequest, JwtAuthGuard  } from 'src/auth/guards/jwt-auth.guards';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { MinioService } from 'src/minio/minio.service';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard)
 export class UsersController {
 
     constructor(
-        private usersService: UsersService
+        private usersService: UsersService,
+        private minioService: MinioService
     ){}
 
 
@@ -57,4 +60,23 @@ export class UsersController {
     async getCurrentUser(@Req() req: AuthRequest) {
       return this.usersService.getUserById(req.user.id);
     }
+
+    // @Post('upload-avatar')
+    // @UseInterceptors(FileInterceptor('avatar'))
+    // async uploadAvatar(@UploadedFile() file: Express.Multer.File){
+    //     const bucketName = 'avatars';
+    //     const avatarurl = await this.minioService.uploadFile(bucketName, file);
+
+    //     return {url:avatarurl};
+    // }
+
+    // @Get(':id/avatar')
+    // async getAvatar(@Param('id') id: string) {
+    //     const user = await this.usersService.getUserById(+id);
+    //     if (user && user.avatartUrl) {
+    //       return { url: user.avatartUrl };
+    //     }
+    //     throw new BadRequestException('Аватарка не найдена');
+    //   }
+    
 }

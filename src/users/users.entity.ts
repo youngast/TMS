@@ -31,4 +31,7 @@ export class UserEntity {
 
     @ManyToMany(() => ProjectEntity, (project) => project.members)
     project: ProjectEntity[];
+
+    // @Column({nullable:true})
+    // avatartUrl: string | null;
 }

@@ -15,6 +15,7 @@ import { TestRunsService } from './test-runs/test-runs.service';
 import { TestRunsController } from './test-runs/test-runs.controller';
 import { TestCasesController } from './test-cases/test-cases.controller';
 // import { ProjectMemberEntity } from './projects/project-member.entity';
+import { MinioService } from './minio/minio.service';
 
 
 @Module({
@@ -36,6 +37,6 @@ import { TestCasesController } from './test-cases/test-cases.controller';
     TestSuiteModule,
   ],
   controllers: [TestRunsController, TestCasesController],
-  providers: [TestRunsService],
+  providers: [TestRunsService, MinioService],
 })
 export class AppModule {}
