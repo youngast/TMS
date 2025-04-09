@@ -67,4 +67,13 @@ export class UsersService {
         return this.userRepository.save(user);
     }
 
+    async updateAvatar(userId: number, avatarUrl: string): Promise<UserEntity> {
+        const user = await this.getUserById(userId);
+        if (user) {
+          user.avatarUrl = avatarUrl;
+          await this.userRepository.save(user);
+        }
+        return user;
+      }
+      
 }

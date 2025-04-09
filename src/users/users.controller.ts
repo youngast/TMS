@@ -61,22 +61,32 @@ export class UsersController {
       return this.usersService.getUserById(req.user.id);
     }
 
-    // @Post('upload-avatar')
-    // @UseInterceptors(FileInterceptor('avatar'))
-    // async uploadAvatar(@UploadedFile() file: Express.Multer.File){
-    //     const bucketName = 'avatars';
-    //     const avatarurl = await this.minioService.uploadFile(bucketName, file);
+    @Post('upload-avatar/:id')
+    @UseInterceptors(FileInterceptor('avatar'))
+    async uploadAvatar(@Param('id') id: string, @UploadedFile() file: Express.Multer.File, @Req() req: AuthRequest) {
+      const userId = parseInt(id, 10);
+    
+      if (isNaN(userId)) {
+        throw new BadRequestException('Неверный формат ID');
+      }
+    
+      const bucketName = 'avatar';
+      const avatarUrl = await this.minioService.uploadFile(bucketName, file);
+      console.log('Uploaded avatar URL:', avatarUrl);  // Логируем URL аватарки
+    
+      const updatedUser = await this.usersService.updateAvatar(userId, avatarUrl);
+      console.log('Updated user data:', updatedUser);  // Логируем обновленные данные пользователя
+    
+      return { avatarUrl };
+    }
 
-    //     return {url:avatarurl};
-    // }
-
-    // @Get(':id/avatar')
-    // async getAvatar(@Param('id') id: string) {
-    //     const user = await this.usersService.getUserById(+id);
-    //     if (user && user.avatartUrl) {
-    //       return { url: user.avatartUrl };
-    //     }
-    //     throw new BadRequestException('Аватарка не найдена');
-    //   }
+    @Get(':id/avatar')
+    async getAvatar(@Param('id') id: string) {
+        const user = await this.usersService.getUserById(+id);
+        if (user && user.avatarUrl) {
+          return { url: user.avatarUrl };
+        }
+        throw new BadRequestException('Аватарка не найдена');
+      }
     
 }

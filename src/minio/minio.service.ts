@@ -10,8 +10,8 @@ export class MinioService {
       endPoint: 'localhost',
       port: 9000,
       useSSL: false,
-      accessKey: 'your-access-key',
-      secretKey: 'your-secret-key',
+      accessKey: 'minioadmin',
+      secretKey: 'minioadmin',
     });
   }
 
@@ -19,10 +19,8 @@ export class MinioService {
   async uploadFile(bucketName: string, file: Express.Multer.File): Promise<string> {
     const fileName = `${Date.now()}_${file.originalname}`;
     
-    // Загружаем файл в MinIO
     await this.minioClient.putObject(bucketName, fileName, file.buffer, file.size);
 
-    // Возвращаем URL файла
     return `http://localhost:9000/${bucketName}/${fileName}`;
   }
 }
