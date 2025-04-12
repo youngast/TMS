@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Patch, Delete, Body, Param, UseGuards, Req, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Delete, Body, Param, UseGuards, Req, UsePipes, ValidationPipe, Query } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.entity';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guards';
@@ -62,7 +62,8 @@ export class ProjectsController {
     }
 
     @Get('name')
-    FindByName(@Param('name') name: string) {
+    FindByName(@Query('name') name: string) {
+        console.log(`name =${name} `)
         return this.projectsService.FindByName(name);
     }
 

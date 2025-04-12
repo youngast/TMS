@@ -1,4 +1,4 @@
-import { Controller,Get,Post,Patch,Delete,Body,Param, NotFoundException } from '@nestjs/common';
+import { Controller,Get,Post,Patch,Delete,Body,Param, NotFoundException, Query } from '@nestjs/common';
 import { TestCasesService } from './test-cases.service';
 import { CreateTestCaseDto } from './dto/create-test-cases.dto';
 import { UpdateTestCaseDto } from './dto/update-test-cases.dto';
@@ -13,10 +13,10 @@ export class TestCasesController {
     ){}
 
     @Get()
-    async getTestCases(@Param('testSuiteId') testSuiteId: string) {
+    async getTestCases(@Param('testSuiteId') testSuiteId: string, @Query('status') status?: string) {
       console.log(`Получение тест-кейсов для testSuiteId=${testSuiteId}`);
   
-      const testCases = await this.testCasesService.getTestCasesBySuiteId(+testSuiteId);
+      const testCases = await this.testCasesService.getTestCasesBySuiteId(+testSuiteId, );
   
       if (!testCases || testCases.length === 0) {
         throw new NotFoundException(`Тест-кейсы для testSuiteId=${testSuiteId} не найдены`);

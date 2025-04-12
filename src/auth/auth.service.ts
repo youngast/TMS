@@ -60,11 +60,11 @@ export class AuthService {
     }
 
 
-    async getCurrentUser(id: number): Promise<{ id: number; name: string; email: string; role: string }> {
+    async getCurrentUser(id: number): Promise<{ id: number; name: string; email: string; role: string, avatarUrl?: string }> {
         const user = await this.findById(id);
         if (!user) {
             throw new NotFoundException('Пользователь не найден');
         }
-        return {id: user.id, name: user.name, email: user.email, role: user.role};
+        return {id: user.id, name: user.name, email: user.email, role: user.role, avatarUrl: user.avatarUrl};
     }      
 }

@@ -136,7 +136,8 @@ export class ProjectsService {
 
     async FindByName(name: string): Promise<ProjectEntity[]> {
         return this.projectRepository.find({
-            where: { name: ILike(`%${name}%`) }
+            where: { name: ILike(`%${name}%`) },
+            relations: ['owner', 'members'],
         });
     }
 
